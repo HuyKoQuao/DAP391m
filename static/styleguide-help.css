@@ -1,0 +1,26 @@
+:root {
+  --roboto-bold-font-family: "Roboto", Helvetica;
+  --roboto-bold-font-weight: 700;
+  --roboto-bold-font-size: 16px;
+  --roboto-bold-letter-spacing: 0px;
+  --roboto-bold-line-height: normal;
+  --roboto-bold-font-style: normal;
+  --roboto-regular-font-family: "Roboto", Helvetica;
+  --roboto-regular-font-weight: 400;
+  --roboto-regular-font-size: 19.84375px;
+  --roboto-regular-letter-spacing: 0px;
+  --roboto-regular-line-height: 34px;
+  --roboto-regular-font-style: normal;
+  --semantic-heading-1-font-family: "Roboto", Helvetica;
+  --semantic-heading-1-font-weight: 700;
+  --semantic-heading-1-font-size: 71.859375px;
+  --semantic-heading-1-letter-spacing: -1.440000057220459px;
+  --semantic-heading-1-line-height: normal;
+  --semantic-heading-1-font-style: normal;
+  --semantic-input-font-family: "Roboto", Helvetica;
+  --semantic-input-font-weight: 400;
+  --semantic-input-font-size: 17.462499618530273px;
+  --semantic-input-letter-spacing: 0px;
+  --semantic-input-line-height: normal;
+  --semantic-input-font-style: normal;
+}

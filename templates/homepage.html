@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PreWeatherX - The Future of Weather</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #000;
+      min-height: 100vh;
+      color: white;
+      overflow-x: hidden;
+    }
+
+    /* Animated background */
+    .bg-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      z-index: -2;
+    }
+
+    .bg-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3), transparent 50%),
+                  radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3), transparent 50%),
+                  radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3), transparent 50%);
+      z-index: -1;
+    }
+
+    /* Floating particles */
+    .particle {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      pointer-events: none;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .particle:nth-child(1) { width: 4px; height: 4px; top: 20%; left: 20%; animation-delay: 0s; }
+    .particle:nth-child(2) { width: 6px; height: 6px; top: 60%; left: 80%; animation-delay: 2s; }
+    .particle:nth-child(3) { width: 3px; height: 3px; top: 80%; left: 40%; animation-delay: 4s; }
+    .particle:nth-child(4) { width: 5px; height: 5px; top: 30%; left: 70%; animation-delay: 1s; }
+    .particle:nth-child(5) { width: 4px; height: 4px; top: 70%; left: 10%; animation-delay: 3s; }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+      50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+    }
+
+    .frame {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      backdrop-filter: blur(10px);
+    }
+
+    /* Header with glassmorphism */
+    .header {
+      padding: 1.5rem 2rem;
+      position: relative;
+      z-index: 100;
+      backdrop-filter: blur(20px);
+      background: rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo-text {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #00f5ff, #ff006e, #8338ec);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: logoGlow 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes logoGlow {
+      0% { filter: drop-shadow(0 0 5px rgba(0, 245, 255, 0.3)); }
+      100% { filter: drop-shadow(0 0 20px rgba(255, 0, 110, 0.6)); }
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      position: relative;
+      font-weight: 500;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #00f5ff, #ff006e);
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .get-started-btn {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 0.75rem 2rem;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .get-started-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .get-started-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .get-started-btn:hover::before {
+      left: 100%;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .main-title {
+      font-size: 4.5rem;
+      font-weight: 900;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #00f5ff, #ff006e, #8338ec, #3a86ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      background-size: 400% 400%;
+      animation: titleGlow 8s ease infinite, textShine 4s ease-in-out infinite;
+      text-shadow: 0 0 40px rgba(0, 245, 255, 0.3);
+      letter-spacing: -2px;
+    }
+
+    @keyframes titleGlow {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    @keyframes textShine {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.2); }
+    }
+
+    .main-description {
+      font-size: 1.4rem;
+      line-height: 1.8;
+      margin-bottom: 3rem;
+      max-width: 700px;
+      opacity: 0.9;
+      font-weight: 300;
+      animation: fadeInUp 1.5s ease;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 0.9; transform: translateY(0); }
+    }
+
+    /* Futuristic search bar */
+    .search-container {
+      display: flex;
+      gap: 0;
+      margin-bottom: 4rem;
+      width: 100%;
+      max-width: 600px;
+      position: relative;
+      animation: slideInUp 1.8s ease;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 1.5rem 2rem;
+      border: none;
+      border-radius: 25px 0 0 25px;
+      font-size: 1.1rem;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 30px rgba(0, 245, 255, 0.3);
+      border-color: rgba(0, 245, 255, 0.5);
+    }
+
+    .search-input::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .search-btn {
+      background: linear-gradient(135deg, #ff006e, #8338ec);
+      color: white;
+      padding: 1.5rem 2.5rem;
+      border: none;
+      border-radius: 0 25px 25px 0;
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .search-btn::before {
+      content: '🔍';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.2rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .search-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 35px rgba(255, 0, 110, 0.4);
+    }
+
+    .search-btn:hover::before {
+      opacity: 1;
+    }
+
+    @keyframes slideInUp {
+      from { opacity: 0; transform: translateY(50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Interactive weather cards */
+    .today-weather-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 3rem;
+      background: linear-gradient(135deg, #00f5ff, #ff006e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .weather-icons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+      width: 100%;
+      max-width: 900px;
+      margin-bottom: 4rem;
+    }
+
+    .weather-card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(20px);
+      padding: 2.5rem 1.5rem;
+      border-radius: 20px;
+      text-align: center;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .weather-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: transform 0.6s ease;
+      transform: rotate(0deg);
+    }
+
+    .weather-card:hover::before {
+      transform: rotate(360deg);
+    }
+
+    .weather-card:hover {
+      transform: translateY(-15px) scale(1.05);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .weather-card.stormy {
+      background: linear-gradient(135deg, rgba(76, 29, 149, 0.6), rgba(107, 33, 168, 0.8));
+    }
+
+    .weather-card.stormy:hover {
+      box-shadow: 0 25px 60px rgba(76, 29, 149, 0.4);
+    }
+
+    .weather-card.cloudy {
+      background: linear-gradient(135deg, rgba(100, 116, 139, 0.6), rgba(148, 163, 184, 0.8));
+    }
+
+    .weather-card.sunset {
+      background: linear-gradient(135deg, rgba(234, 88, 12, 0.6), rgba(220, 38, 38, 0.8));
+    }
+
+    .weather-card.sunny {
+      background: linear-gradient(135deg, rgba(8, 145, 178, 0.6), rgba(2, 132, 199, 0.8));
+    }
+
+    .weather-emoji {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      display: block;
+      animation: bounce 2s infinite;
+      position: relative;
+      z-index: 1;
+    }
+
+    .weather-card:hover .weather-emoji {
+      animation: spin 0.8s ease;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      60% { transform: translateY(-5px); }
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg) scale(1); }
+      to { transform: rotate(360deg) scale(1.2); }
+    }
+
+    .weather-label {
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 2px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Enhanced features section */
+    .features {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 6rem 2rem;
+      margin-top: 2rem;
+      position: relative;
+    }
+
+    .features::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #00f5ff, #ff006e, transparent);
+    }
+
+    .features-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .features-title {
+      font-size: 3.5rem;
+      font-weight: 900;
+      margin-bottom: 4rem;
+      background: linear-gradient(135deg, #00f5ff, #ff006e, #8338ec);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 3rem;
+      margin-top: 2rem;
+    }
+
+    .feature-card {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 3rem 2rem;
+      border-radius: 20px;
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, #00f5ff, #ff006e);
+      transition: left 0.5s ease;
+    }
+
+    .feature-card:hover::after {
+      left: 100%;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 50px rgba(0, 245, 255, 0.1);
+    }
+
+    .feature-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: #00f5ff;
+    }
+
+    .feature-description {
+      line-height: 1.8;
+      opacity: 0.9;
+      font-size: 1.1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .main-title {
+        font-size: 2.5rem;
+      }
+
+      .weather-icons {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+      }
+
+      .search-container {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .search-input {
+        border-radius: 25px;
+      }
+
+      .search-btn {
+        border-radius: 25px;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-container"></div>
+  <div class="bg-overlay"></div>
+
+  <!-- Floating particles -->
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+
+  <div class="frame">
+    <!-- Header -->
+    <header class="header">
+      <nav class="nav">
+        <div class="logo-section">
+          <div class="logo-text">PreWeatherX</div>
+        </div>
+
+        <div class="nav-links">
+          <a href="/">Home</a>
+          <a href="/help">Help</a>
+          <a href="/contact">Contact</a>
+        </div>
+
+        <a href="/chat" class="get-started-btn">Get Started</a>
+      </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <h1 class="main-title">The Future of Weather</h1>
+
+      <p class="main-description">
+        Experience weather forecasting reimagined with cutting-edge AI technology.
+        Get hyper-accurate predictions, personalized insights, and real-time climate intelligence
+        that adapts to your world.
+      </p>
+
+      <div class="search-container">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Ask anything about weather, climate, or atmospheric conditions..."
+        />
+        <button class="search-btn">Analyze</button>
+      </div>
+
+      <div class="today-weather-title">Live Weather Pulse</div>
+
+      <!-- Weather Icons Section -->
+      <div class="weather-icons">
+        <div class="weather-card stormy">
+          <span class="weather-emoji">⛈️</span>
+          <div class="weather-label">STORM</div>
+        </div>
+        <div class="weather-card cloudy">
+          <span class="weather-emoji">☁️</span>
+          <div class="weather-label">CLOUDY</div>
+        </div>
+        <div class="weather-card sunset">
+          <span class="weather-emoji">🌅</span>
+          <div class="weather-label">Sunset</div>
+        </div>
+        <div class="weather-card sunny">
+          <span class="weather-emoji">☀️</span>
+          <div class="weather-label">BRIGHT</div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Features Section -->
+    <section class="features">
+      <div class="features-container">
+        <h2 class="features-title">Next-Gen Weather Intelligence</h2>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <h3 class="feature-title">🤖 AI-Powered Precision</h3>
+            <p class="feature-description">
+              Revolutionary machine learning algorithms analyze millions of data points
+              to deliver unprecedented accuracy in weather prediction and climate analysis.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <h3 class="feature-title">⚡ Instant Intelligence</h3>
+            <p class="feature-description">
+              Lightning-fast responses with intuitive design that anticipates your needs.
+              Get complex weather insights delivered in simple, actionable formats.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <h3 class="feature-title">🌍 Hyper-Personalized</h3>
+            <p class="feature-description">
+              Adaptive weather intelligence that learns from your patterns and preferences,
+              delivering customized forecasts tailored to your lifestyle and location.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Add interactive animations
+    document.addEventListener('DOMContentLoaded', function() {
+      const weatherCards = document.querySelectorAll('.weather-card');
+      const searchInput = document.querySelector('.search-input');
+      const searchBtn = document.querySelector('.search-btn');
+
+      // Weather card click animation
+      weatherCards.forEach(card => {
+        card.addEventListener('click', function() {
+          this.style.transform = 'translateY(-15px) scale(1.1) rotateY(5deg)';
+          setTimeout(() => {
+            this.style.transform = 'translateY(-15px) scale(1.05)';
+          }, 200);
+        });
+      });
+
+      // Search input glow effect
+      searchInput.addEventListener('focus', function() {
+        this.style.boxShadow = '0 0 30px rgba(0, 245, 255, 0.4), 0 0 60px rgba(255, 0, 110, 0.2)';
+      });
+
+      searchInput.addEventListener('blur', function() {
+        this.style.boxShadow = '0 0 30px rgba(0, 245, 255, 0.3)';
+      });
+
+      // Search button pulse effect
+      searchBtn.addEventListener('mouseover', function() {
+        this.style.animation = 'pulse 1.5s infinite';
+      });
+
+      searchBtn.addEventListener('mouseout', function() {
+        this.style.animation = 'none';
+      });
+
+      // Dynamic particle movement
+      const particles = document.querySelectorAll('.particle');
+      particles.forEach((particle, index) => {
+        setInterval(() => {
+          const randomX = Math.random() * 100;
+          const randomY = Math.random() * 100;
+          particle.style.left = randomX + '%';
+          particle.style.top = randomY + '%';
+        }, 8000 + index * 1000);
+      });
+    });
+
+    // Add pulse animation keyframes
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>
